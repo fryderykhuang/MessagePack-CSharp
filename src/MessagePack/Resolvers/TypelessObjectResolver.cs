@@ -5,7 +5,7 @@ using MessagePack.Internal;
 
 namespace MessagePack.Resolvers
 {
-#if NETSTANDARD
+#if NETSTANDARD || NETFRAMEWORK
 
     /// <summary>
     /// Used for `object` fields/collections, ex: var arr = new object[] { 1, "a", new Model() };
@@ -81,8 +81,8 @@ namespace MessagePack.Resolvers
                 {typeof(UInt64), ForceUInt64BlockFormatter.Instance},
                 {typeof(byte), ForceByteBlockFormatter.Instance},
                 {typeof(sbyte), ForceSByteBlockFormatter.Instance},
-            
-                // Nulllable Primitive
+
+                // Nullable Primitive
                 {typeof(Nullable<Int16>), NullableForceInt16BlockFormatter.Instance},
                 {typeof(Nullable<Int32>), NullableForceInt32BlockFormatter.Instance},
                 {typeof(Nullable<Int64>), NullableForceInt64BlockFormatter.Instance},
@@ -91,8 +91,8 @@ namespace MessagePack.Resolvers
                 {typeof(Nullable<UInt64>), NullableForceUInt64BlockFormatter.Instance},
                 {typeof(Nullable<byte>), NullableForceByteBlockFormatter.Instance},
                 {typeof(Nullable<sbyte>), NullableForceSByteBlockFormatter.Instance},
-            
-                // otpmitized primitive array formatter
+
+                // optimized primitive array formatter
                 {typeof(Int16[]), ForceInt16BlockArrayFormatter.Instance},
                 {typeof(Int32[]), ForceInt32BlockArrayFormatter.Instance},
                 {typeof(Int64[]), ForceInt64BlockArrayFormatter.Instance},

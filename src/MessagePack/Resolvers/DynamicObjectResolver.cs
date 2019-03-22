@@ -1,4 +1,5 @@
 ﻿#if !UNITY_WSA
+#if !NET_STANDARD_2_0
 
 using System;
 using System.Linq;
@@ -35,7 +36,7 @@ namespace MessagePack.Resolvers
             assembly = new DynamicAssembly(ModuleName);
         }
 
-#if NET_35
+#if NETFRAMEWORK
         public AssemblyBuilder Save()
         {
             return assembly.Save();
@@ -163,7 +164,7 @@ namespace MessagePack.Resolvers
             assembly = new DynamicAssembly(ModuleName);
         }
 
-#if NET_35
+#if NETFRAMEWORK
         public AssemblyBuilder Save()
         {
             return assembly.Save();
@@ -280,7 +281,7 @@ namespace MessagePack.Internal
 {
     internal static class DynamicObjectTypeBuilder
     {
-#if NETSTANDARD
+#if NETSTANDARD || NETFRAMEWORK
         static readonly Regex SubtractFullNameRegex = new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+", RegexOptions.Compiled);
 #else
         static readonly Regex SubtractFullNameRegex = new Regex(@", Version=\d+.\d+.\d+.\d+, Culture=\w+, PublicKeyToken=\w+");
@@ -416,7 +417,7 @@ namespace MessagePack.Internal
             }
             foreach (var item in serializationInfo.Members.Where(x => x.IsReadable))
             {
-                var attr = item.GetMessagePackFormatterAttribtue();
+                var attr = item.GetMessagePackFormatterAttribute();
                 if (attr != null)
                 {
                     var formatter = Activator.CreateInstance(attr.FormatterType, attr.Arguments);
@@ -429,7 +430,7 @@ namespace MessagePack.Internal
             }
             foreach (var item in serializationInfo.Members) // not only for writable because for use ctor.
             {
-                var attr = item.GetMessagePackFormatterAttribtue();
+                var attr = item.GetMessagePackFormatterAttribute();
                 if (attr != null)
                 {
                     var formatter = Activator.CreateInstance(attr.FormatterType, attr.Arguments);
@@ -519,7 +520,7 @@ namespace MessagePack.Internal
             Dictionary<ObjectSerializationInfo.EmittableMember, FieldInfo> dict = new Dictionary<ObjectSerializationInfo.EmittableMember, FieldInfo>();
             foreach (var item in info.Members.Where(x => x.IsReadable || x.IsWritable))
             {
-                var attr = item.GetMessagePackFormatterAttribtue();
+                var attr = item.GetMessagePackFormatterAttribute();
                 if (attr != null)
                 {
                     var f = builder.DefineField(item.Name + "_formatter", attr.FormatterType, FieldAttributes.Private | FieldAttributes.InitOnly);
@@ -676,7 +677,7 @@ namespace MessagePack.Internal
                         il.Emit(OpCodes.Ldelem_Ref);
 
                         // Optimize, WriteRaw(Unity, large) or UnsafeMemory32/64.WriteRawX
-#if NETSTANDARD
+#if NETSTANDARD || NETFRAMEWORK
                         var valueLen = MessagePackBinary.GetEncodedStringBytes(item.StringKey).Length;
                         if (valueLen <= MessagePackRange.MaxFixStringLength)
                         {
@@ -1426,7 +1427,9 @@ typeof(int), typeof(int) });
                         var pseudokey = item.GetCustomAttribute<DataMemberAttribute>(true);
                         if (pseudokey == null)
                         {
-                            throw new MessagePackDynamicObjectResolverException("all public members must mark DataMemberAttribute or IgnoreMemberAttribute." + " type: " + type.FullName + " member:" + item.Name);
+                            // This member has no DataMemberAttribute nor IgnoreMemberAttribute.
+                            // But the type *did* have a DataContractAttribute on it, so no attribute implies the member should not be serialized.
+                            continue;
                         }
 
                         // use Order first
@@ -1507,7 +1510,9 @@ typeof(int), typeof(int) });
                         var pseudokey = item.GetCustomAttribute<DataMemberAttribute>(true);
                         if (pseudokey == null)
                         {
-                            throw new MessagePackDynamicObjectResolverException("all public members must mark DataMemberAttribute or IgnoreMemberAttribute." + " type: " + type.FullName + " member:" + item.Name);
+                            // This member has no DataMemberAttribute nor IgnoreMemberAttribute.
+                            // But the type *did* have a DataContractAttribute on it, so no attribute implies the member should not be serialized.
+                            continue;
                         }
 
                         // use Order first
@@ -1754,7 +1759,7 @@ typeof(int), typeof(int) });
                 }
             }
 
-            public MessagePackFormatterAttribute GetMessagePackFormatterAttribtue()
+            public MessagePackFormatterAttribute GetMessagePackFormatterAttribute()
             {
                 if (IsProperty)
                 {
@@ -1802,29 +1807,29 @@ typeof(int), typeof(int) });
                 }
             }
 
-            public object ReflectionLoadValue(object value)
-            {
-                if (IsProperty)
-                {
-                    return PropertyInfo.GetValue(value);
-                }
-                else
-                {
-                    return FieldInfo.GetValue(value);
-                }
-            }
+            //public object ReflectionLoadValue(object value)
+            //{
+            //    if (IsProperty)
+            //    {
+            //        return PropertyInfo.GetValue(value, null);
+            //    }
+            //    else
+            //    {
+            //        return FieldInfo.GetValue(value);
+            //    }
+            //}
 
-            public void ReflectionStoreValue(object obj, object value)
-            {
-                if (IsProperty)
-                {
-                    PropertyInfo.SetValue(obj, value);
-                }
-                else
-                {
-                    FieldInfo.SetValue(obj, value);
-                }
-            }
+            //public void ReflectionStoreValue(object obj, object value)
+            //{
+            //    if (IsProperty)
+            //    {
+            //        PropertyInfo.SetValue(obj, value, null);
+            //    }
+            //    else
+            //    {
+            //        FieldInfo.SetValue(obj, value);
+            //    }
+            //}
         }
     }
 
@@ -1838,4 +1843,5 @@ typeof(int), typeof(int) });
     }
 }
 
+#endif
 #endif

@@ -19,7 +19,7 @@ namespace MessagePack.Internal
             root = new AutomataNode(0);
         }
 
-#if NETSTANDARD
+#if NETSTANDARD || NETFRAMEWORK
         public unsafe void Add(string str, int value)
         {
             var bytes = Encoding.UTF8.GetBytes(str);
@@ -172,10 +172,14 @@ namespace MessagePack.Internal
 
         // IL Emit
 
+#if !NET_STANDARD_2_0
+
         public void EmitMatch(ILGenerator il, LocalBuilder p, LocalBuilder rest, LocalBuilder key, Action<KeyValuePair<string, int>> onFound, Action onNotFound)
         {
             root.EmitSearchNext(il, p, rest, key, onFound, onNotFound);
         }
+
+#endif
 
         class AutomataNode : IComparable<AutomataNode>
         {
@@ -235,7 +239,7 @@ namespace MessagePack.Internal
                 return v;
             }
 
-#if NETSTANDARD
+#if NETSTANDARD || NETFRAMEWORK
 
             public unsafe AutomataNode SearchNext(ref byte* p, ref int rest)
             {
@@ -334,13 +338,15 @@ namespace MessagePack.Internal
                 }
             }
 
+#if !NET_STANDARD_2_0
+
             // SearchNext(ref byte* p, ref int rest, ref ulong key)
             public void EmitSearchNext(ILGenerator il, LocalBuilder p, LocalBuilder rest, LocalBuilder key, Action<KeyValuePair<string, int>> onFound, Action onNotFound)
             {
                 // key = AutomataKeyGen.GetKey(ref p, ref rest);
                 il.EmitLdloca(p);
                 il.EmitLdloca(rest);
-#if NETSTANDARD
+#if NETSTANDARD || NETFRAMEWORK
                 il.EmitCall(AutomataKeyGen.GetKeyMethod);
 #else
                 il.EmitCall(AutomataKeyGen.GetGetKeyMethod());
@@ -453,6 +459,8 @@ namespace MessagePack.Internal
                     EmitSearchNextCore(il, p, rest, key, onFound, onNotFound, r, r.Length);
                 }
             }
+
+#endif
         }
     }
 
@@ -460,11 +468,13 @@ namespace MessagePack.Internal
     {
         public delegate ulong PointerDelegate<T>(ref T p, ref int rest);
 
-#if NETSTANDARD
+#if NETSTANDARD || NETFRAMEWORK
         public static readonly MethodInfo GetKeyMethod = typeof(AutomataKeyGen).GetRuntimeMethod("GetKey", new[] { typeof(byte).MakePointerType().MakeByRefType(), typeof(int).MakeByRefType() });
 #endif
 
 #if !NETSTANDARD
+
+#if !NET_STANDARD_2_0
 
         static MethodInfo dynamicGetKeyMethod;
         static readonly object gate = new object();
@@ -679,10 +689,12 @@ namespace MessagePack.Internal
             
             return dynamicGetKeyMethod;
         }
-        
+
 #endif
 
-#if NETSTANDARD
+#endif
+
+#if NETSTANDARD || NETFRAMEWORK
 
         public static unsafe ulong GetKey(ref byte* p, ref int rest)
         {
