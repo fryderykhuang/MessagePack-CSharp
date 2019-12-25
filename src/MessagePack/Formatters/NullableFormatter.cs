@@ -68,4 +68,42 @@ namespace MessagePack.Formatters
             }
         }
     }
+    
+    public sealed class StaticBareNullableFormatter<T> : IMessagePackFormatter<BareNullable<T>>
+        where T : struct
+    {
+        readonly IMessagePackFormatter<T> underlyingFormatter;
+
+        public StaticBareNullableFormatter(IMessagePackFormatter<T> underlyingFormatter)
+        {
+            this.underlyingFormatter = underlyingFormatter;
+        }
+
+        public int Serialize(ref byte[] bytes, int offset, BareNullable<T> value, IFormatterResolver formatterResolver)
+        {
+            if (value.IsNull)
+            {
+                return MessagePackBinary.WriteNil(ref bytes, offset);
+            }
+            else
+            {
+                return underlyingFormatter.Serialize(ref bytes, offset, value.Value, formatterResolver);
+            }
+        }
+
+        public BareNullable<T> Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
+        {
+            if (MessagePackBinary.IsNil(bytes, offset))
+            {
+                readSize = 1;
+                return new BareNullable<T>(true);
+            }
+            else
+            {
+                return new BareNullable<T>(underlyingFormatter.Deserialize(bytes, offset, formatterResolver,
+                    out readSize));
+            }
+        }
+    }
+
 }

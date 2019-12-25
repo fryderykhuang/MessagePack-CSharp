@@ -127,6 +127,14 @@ namespace MessagePack
             return resolver.GetFormatterWithVerify<T>().Serialize(ref bytes, offset, value, resolver);
         }
 
+        /// <summary>
+        /// Reflect of resolver.GetFormatterWithVerify[T].Serialize.
+        /// </summary>
+        public static int Serialize<T>(ref byte[] bytes, int offset, in T value, IFormatterResolver resolver)
+        {
+            return resolver.GetFormatterWithVerify<T>().Serialize(ref bytes, offset, value, resolver);
+        }
+
 #if NETSTANDARD || NETFRAMEWORK
 
         /// <summary>

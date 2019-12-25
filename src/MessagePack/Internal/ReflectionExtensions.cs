@@ -15,6 +15,11 @@ namespace MessagePack.Internal
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(System.Nullable<>);
         }
 
+        public static bool IsBareNullable(this System.Reflection.TypeInfo type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(BareNullable<>);
+        }
+
         public static bool IsPublic(this System.Reflection.TypeInfo type)
         {
             return type.IsPublic;
