@@ -972,7 +972,7 @@ namespace MessagePack
                 int bytesRead = Math.Min(remainingByteLength, this.reader.UnreadSpan.Length);
                 remainingByteLength -= bytesRead;
                 bool flush = remainingByteLength == 0;
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 || NETSTANDARD2_1
                 initializedChars += decoder.GetChars(this.reader.UnreadSpan.Slice(0, bytesRead), charArray.AsSpan(initializedChars), flush);
 #else
                 unsafe

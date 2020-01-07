@@ -88,6 +88,20 @@ namespace MessagePack.Resolvers
                     return;
                 }
 
+                if (ti.IsBareNullable())
+                {
+                    ti = ti.GenericTypeArguments[0].GetTypeInfo();
+
+                    var innerFormatter = DynamicObjectResolver.Instance.GetFormatterDynamic(ti.AsType());
+                    if (innerFormatter == null)
+                    {
+                        return;
+                    }
+
+                    Formatter = (IMessagePackFormatter<T>)Activator.CreateInstance(typeof(StaticBareNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    return;
+                }
+
                 if (ti.IsAnonymous())
                 {
                     Formatter = (IMessagePackFormatter<T>)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
@@ -145,6 +159,20 @@ namespace MessagePack.Resolvers
                     }
 
                     Formatter = (IMessagePackFormatter<T>)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    return;
+                }
+
+                if (ti.IsBareNullable())
+                {
+                    ti = ti.GenericTypeArguments[0].GetTypeInfo();
+
+                    var innerFormatter = DynamicObjectResolverAllowPrivate.Instance.GetFormatterDynamic(ti.AsType());
+                    if (innerFormatter == null)
+                    {
+                        return;
+                    }
+
+                    Formatter = (IMessagePackFormatter<T>)Activator.CreateInstance(typeof(StaticBareNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
                     return;
                 }
 
@@ -224,6 +252,20 @@ namespace MessagePack.Resolvers
                     return;
                 }
 
+                if (ti.IsBareNullable())
+                {
+                    ti = ti.GenericTypeArguments[0].GetTypeInfo();
+
+                    var innerFormatter = DynamicContractlessObjectResolver.Instance.GetFormatterDynamic(ti.AsType());
+                    if (innerFormatter == null)
+                    {
+                        return;
+                    }
+
+                    Formatter = (IMessagePackFormatter<T>)Activator.CreateInstance(typeof(StaticBareNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    return;
+                }
+
                 if (ti.IsAnonymous())
                 {
                     Formatter = (IMessagePackFormatter<T>)DynamicObjectTypeBuilder.BuildFormatterToDynamicMethod(typeof(T), true, true, false);
@@ -282,6 +324,20 @@ namespace MessagePack.Resolvers
                     }
 
                     Formatter = (IMessagePackFormatter<T>)Activator.CreateInstance(typeof(StaticNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
+                    return;
+                }
+
+                if (ti.IsBareNullable())
+                {
+                    ti = ti.GenericTypeArguments[0].GetTypeInfo();
+
+                    var innerFormatter = DynamicContractlessObjectResolverAllowPrivate.Instance.GetFormatterDynamic(ti.AsType());
+                    if (innerFormatter == null)
+                    {
+                        return;
+                    }
+
+                    Formatter = (IMessagePackFormatter<T>)Activator.CreateInstance(typeof(StaticBareNullableFormatter<>).MakeGenericType(ti.AsType()), new object[] { innerFormatter });
                     return;
                 }
 

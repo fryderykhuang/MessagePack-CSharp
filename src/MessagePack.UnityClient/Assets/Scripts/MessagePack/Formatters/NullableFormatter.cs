@@ -70,4 +70,40 @@ namespace MessagePack.Formatters
             }
         }
     }
+
+    public sealed class StaticBareNullableFormatter<T> : IMessagePackFormatter<BareNullable<T>>
+        where T : struct
+    {
+        readonly IMessagePackFormatter<T> underlyingFormatter;
+
+        public StaticBareNullableFormatter(IMessagePackFormatter<T> underlyingFormatter)
+        {
+            this.underlyingFormatter = underlyingFormatter;
+        }
+
+        public void Serialize(ref MessagePackWriter writer, BareNullable<T> value, MessagePackSerializerOptions options)
+        {
+            if (value.IsNull)
+            {
+                writer.WriteNil();
+            }
+            else
+            {
+                this.underlyingFormatter.Serialize(ref writer, value.Value, options);
+            }
+        }
+
+        public BareNullable<T> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        {
+            if (reader.IsNil)
+            {
+                // readSize = 1;
+                return new BareNullable<T>(true);
+            }
+            else
+            {
+                return new BareNullable<T>(this.underlyingFormatter.Deserialize(ref reader, options));
+            }
+        }
+    }
 }

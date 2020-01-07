@@ -1144,6 +1144,47 @@ namespace MessagePack
             }
         }
 
+        internal long FlushAndCopyToBuffer(ref byte[] buf)
+        {
+            if (this.writer.TryGetUncommittedSpan(out var span))
+            {
+                if (buf.Length >= span.Length)
+                {
+                    span.CopyTo(buf);
+                }
+                else
+                {
+                    buf = span.ToArray();
+                }
+
+                return span.Length;
+            }
+            else
+            {
+                if (this.writer.SequenceRental.Value == null)
+                {
+                    throw new NotSupportedException("This instance was not initialized to support this operation.");
+                }
+
+                this.Flush();
+
+                var seq = this.writer.SequenceRental.Value.AsReadOnlySequence;
+
+                byte[] ret = null;
+                if (buf.Length >= seq.Length)
+                {
+                    seq.CopyTo(buf);
+                }
+                else
+                {
+                    buf = seq.ToArray();
+                }
+
+                this.writer.SequenceRental.Dispose();
+                return seq.Length;
+            }
+        }
+
         private static void WriteBigEndian(short value, Span<byte> span) => WriteBigEndian(unchecked((ushort)value), span);
 
         private static void WriteBigEndian(int value, Span<byte> span) => WriteBigEndian(unchecked((uint)value), span);

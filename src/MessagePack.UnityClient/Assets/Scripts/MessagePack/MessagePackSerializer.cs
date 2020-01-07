@@ -126,6 +126,22 @@ namespace MessagePack
             return msgpackWriter.FlushAndGetArray();
         }
 
+        public static int Serialize<T>(T value, ref byte[] buffer, MessagePackSerializerOptions options = null, CancellationToken cancellationToken = default)
+        {
+            byte[] array = scratchArray;
+            if (array == null)
+            {
+                scratchArray = array = new byte[65536];
+            }
+
+            var msgpackWriter = new MessagePackWriter(SequencePool.Shared, array)
+            {
+                CancellationToken = cancellationToken,
+            };
+            Serialize(ref msgpackWriter, value, options);
+            return (int) msgpackWriter.FlushAndCopyToBuffer(ref buffer);
+        }
+
         /// <summary>
         /// Serializes a given value to the specified stream.
         /// </summary>

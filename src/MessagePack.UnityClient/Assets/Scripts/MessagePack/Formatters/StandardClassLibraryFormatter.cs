@@ -402,7 +402,7 @@ namespace MessagePack.Formatters
         public System.Numerics.BigInteger Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             ReadOnlySequence<byte> bytes = reader.ReadBytes().Value;
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 || NETSTANDARD2_1
             if (bytes.IsSingleSegment)
             {
                 return new System.Numerics.BigInteger(bytes.First.Span);
