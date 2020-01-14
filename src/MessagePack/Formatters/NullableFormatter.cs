@@ -81,14 +81,9 @@ namespace MessagePack.Formatters
 
         public int Serialize(ref byte[] bytes, int offset, BareNullable<T> value, IFormatterResolver formatterResolver)
         {
-            if (value.IsNull)
-            {
-                return MessagePackBinary.WriteNil(ref bytes, offset);
-            }
-            else
-            {
-                return underlyingFormatter.Serialize(ref bytes, offset, value.Value, formatterResolver);
-            }
+            return !value.HasValue
+                ? MessagePackBinary.WriteNil(ref bytes, offset)
+                : underlyingFormatter.Serialize(ref bytes, offset, value.Value, formatterResolver);
         }
 
         public BareNullable<T> Deserialize(byte[] bytes, int offset, IFormatterResolver formatterResolver, out int readSize)
@@ -96,7 +91,7 @@ namespace MessagePack.Formatters
             if (MessagePackBinary.IsNil(bytes, offset))
             {
                 readSize = 1;
-                return new BareNullable<T>(true);
+                return new BareNullable<T>();
             }
             else
             {

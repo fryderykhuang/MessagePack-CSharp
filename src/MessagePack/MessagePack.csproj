@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;netstandard2.0;net45;net47</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
 <!--    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>-->
     <NoWarn>$(NoWarn);CS0649</NoWarn>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -14,6 +14,8 @@
     <PackageTags>MsgPack;MessagePack;Serialization;Formatter;Serializer;Unity;Xamarin</PackageTags>
     <AssemblyName>MessagePack</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+<!--    <PackageId>Flexem.MessagePack</PackageId>-->
+    <PackageVersion>1.8.75-flexem</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
