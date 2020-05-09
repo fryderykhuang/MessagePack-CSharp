@@ -83,13 +83,13 @@ namespace MessagePack.Formatters
 
         public void Serialize(ref MessagePackWriter writer, BareNullable<T> value, MessagePackSerializerOptions options)
         {
-            if (value.IsNull)
+            if (value.HasValue)
             {
-                writer.WriteNil();
+                this.underlyingFormatter.Serialize(ref writer, value.Value, options);
             }
             else
             {
-                this.underlyingFormatter.Serialize(ref writer, value.Value, options);
+                writer.WriteNil();
             }
         }
 
@@ -97,8 +97,7 @@ namespace MessagePack.Formatters
         {
             if (reader.IsNil)
             {
-                // readSize = 1;
-                return new BareNullable<T>(true);
+                return default;
             }
             else
             {
