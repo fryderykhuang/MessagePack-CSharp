@@ -2,8 +2,8 @@ trigger:
   branches:
     include:
     - master
-    - v2.0
-    - "*_validate"
+    - 'v?.*'
+    - 'validate/*'
   paths:
     exclude: ["doc", "*.md"]
 
@@ -48,7 +48,7 @@ jobs:
 
 - job: macOS
   pool:
-    vmImage: macOS 10.13
+    vmImage: macOS-10.15
   steps:
   - checkout: self
     clean: true

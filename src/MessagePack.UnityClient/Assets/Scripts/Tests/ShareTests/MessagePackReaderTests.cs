@@ -3,7 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Nerdbank.Streams;
@@ -68,6 +70,23 @@ namespace MessagePack.Tests
         }
 
         [Fact]
+        public void TryReadArrayHeader()
+        {
+            var sequence = new Sequence<byte>();
+            var writer = new MessagePackWriter(sequence);
+            const int expectedCount = 100;
+            writer.WriteArrayHeader(expectedCount);
+            writer.Flush();
+
+            var reader = new MessagePackReader(sequence.AsReadOnlySequence.Slice(0, sequence.Length - 1));
+            Assert.False(reader.TryReadArrayHeader(out _));
+
+            reader = new MessagePackReader(sequence);
+            Assert.True(reader.TryReadArrayHeader(out int actualCount));
+            Assert.Equal(expectedCount, actualCount);
+        }
+
+        [Fact]
         public void ReadMapHeader_MitigatesLargeAllocations()
         {
             var sequence = new Sequence<byte>();
@@ -80,6 +99,59 @@ namespace MessagePack.Tests
                 var reader = new MessagePackReader(sequence);
                 reader.ReadMapHeader();
             });
+        }
+
+        [Fact]
+        public void TryReadMapHeader()
+        {
+            var sequence = new Sequence<byte>();
+            var writer = new MessagePackWriter(sequence);
+            const int expectedCount = 100;
+            writer.WriteMapHeader(expectedCount);
+            writer.Flush();
+
+            var reader = new MessagePackReader(sequence.AsReadOnlySequence.Slice(0, sequence.Length - 1));
+            Assert.False(reader.TryReadMapHeader(out _));
+
+            reader = new MessagePackReader(sequence);
+            Assert.True(reader.TryReadMapHeader(out int actualCount));
+            Assert.Equal(expectedCount, actualCount);
+        }
+
+        [Fact]
+        public void ReadExtensionFormatHeader_MitigatesLargeAllocations()
+        {
+            var sequence = new Sequence<byte>();
+            var writer = new MessagePackWriter(sequence);
+            writer.WriteExtensionFormatHeader(new ExtensionHeader(3, 1));
+            writer.WriteRaw(new byte[1]);
+            writer.Flush();
+
+            Assert.Throws<EndOfStreamException>(() =>
+            {
+                var truncatedReader = new MessagePackReader(sequence.AsReadOnlySequence.Slice(0, sequence.Length - 1));
+                truncatedReader.ReadExtensionFormatHeader();
+            });
+
+            var reader = new MessagePackReader(sequence);
+            reader.ReadExtensionFormatHeader();
+        }
+
+        [Fact]
+        public void TryReadExtensionFormatHeader()
+        {
+            var sequence = new Sequence<byte>();
+            var writer = new MessagePackWriter(sequence);
+            var expectedExtensionHeader = new ExtensionHeader(4, 100);
+            writer.WriteExtensionFormatHeader(expectedExtensionHeader);
+            writer.Flush();
+
+            var reader = new MessagePackReader(sequence.AsReadOnlySequence.Slice(0, sequence.Length - 1));
+            Assert.False(reader.TryReadExtensionFormatHeader(out _));
+
+            reader = new MessagePackReader(sequence);
+            Assert.True(reader.TryReadExtensionFormatHeader(out ExtensionHeader actualExtensionHeader));
+            Assert.Equal(expectedExtensionHeader, actualExtensionHeader);
         }
 
         [Fact]
@@ -135,6 +207,14 @@ namespace MessagePack.Tests
         }
 
         [Fact]
+        public void ReadString_MultibyteChars()
+        {
+            var reader = new MessagePackReader(TestConstants.MsgPackEncodedMultibyteCharString);
+            string actual = reader.ReadString();
+            Assert.Equal(TestConstants.MultibyteCharString, actual);
+        }
+
+        [Fact]
         public void CancellationToken()
         {
             var reader = new MessagePackReader(default);
@@ -170,6 +250,17 @@ namespace MessagePack.Tests
             Assert.Equal(1, third.Length);
 
             Assert.True(reader.End);
+        }
+
+        [Fact]
+        public void Depth()
+        {
+            var reader = new MessagePackReader(Encode((ref MessagePackWriter w) => w.Write(1.23)));
+            Assert.Equal(0, reader.Depth);
+            reader.Depth++;
+            Assert.Equal(1, reader.Depth);
+            reader.Depth--;
+            Assert.Equal(0, reader.Depth);
         }
 
         [Fact]
