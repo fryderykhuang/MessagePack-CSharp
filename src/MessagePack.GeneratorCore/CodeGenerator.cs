@@ -55,7 +55,7 @@ namespace MessagePackCompiler
                 sw.Restart();
                 logger("Method Collect Start");
 
-                var (objectInfo, enumInfo, genericInfo, unionInfo, unboundGenericInfo) = collector.Collect();
+                var (objectInfo, enumInfo, genericInfo, unionInfo, closedTypeGenericInfo) = collector.Collect();
 
                 logger("Method Collect Complete:" + sw.Elapsed.ToString());
 
@@ -66,7 +66,7 @@ namespace MessagePackCompiler
                 {
                     // SingleFile Output
                     var objectFormatterTemplates = objectInfo
-                        .Concat(unboundGenericInfo)
+                        .Concat(closedTypeGenericInfo)
                         .GroupBy(x => x.Namespace)
                         .Select(x => new FormatterTemplate()
                         {
@@ -138,7 +138,7 @@ namespace MessagePackCompiler
                 else
                 {
                     // Multiple File output
-                    foreach (var x in objectInfo.Concat(unboundGenericInfo))
+                    foreach (var x in objectInfo.Concat(closedTypeGenericInfo))
                     {
                         var template = new FormatterTemplate()
                         {
@@ -185,7 +185,7 @@ namespace MessagePackCompiler
                     await OutputToDirAsync(output, resolverTemplate.Namespace, resolverTemplate.ResolverName, multioutSymbol, resolverTemplate.TransformText(), cancellationToken).ConfigureAwait(false);
                 }
 
-                if (objectInfo.Length == 0 && enumInfo.Length == 0 && genericInfo.Length == 0 && unionInfo.Length == 0 && unboundGenericInfo.Length == 0)
+                if (objectInfo.Length == 0 && enumInfo.Length == 0 && genericInfo.Length == 0 && unionInfo.Length == 0 && closedTypeGenericInfo.Length == 0)
                 {
                     logger("Generated result is empty, unexpected result?");
                 }
@@ -220,13 +220,20 @@ namespace MessagePackCompiler
                 fi.Directory.Create();
             }
 
-            System.IO.File.WriteAllText(path, text, NoBomUtf8);
+            System.IO.File.WriteAllText(path, NormalizeNewLines(text), NoBomUtf8);
             return Task.CompletedTask;
         }
 
         private static string MultiSymbolToSafeFilePath(string symbol)
         {
             return symbol.Replace("!", "NOT_").Replace("(", string.Empty).Replace(")", string.Empty).Replace("||", "_OR_").Replace("&&", "_AND_");
+        }
+
+        private static string NormalizeNewLines(string content)
+        {
+            // The T4 generated code may be text with mixed line ending types. (CR + CRLF)
+            // We need to normalize the line ending type in each Operating Systems. (e.g. Windows=CRLF, Linux/macOS=LF)
+            return content.Replace("\r\n", "\n").Replace("\n", Environment.NewLine);
         }
     }
 }
