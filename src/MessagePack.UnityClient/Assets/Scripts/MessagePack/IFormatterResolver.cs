@@ -26,12 +26,18 @@ namespace MessagePack
 
     public static class FormatterResolverExtensions
     {
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ThrowArgumentNullException(string paramName)
+        {
+            throw new ArgumentNullException(paramName);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IMessagePackFormatter<T> GetFormatterWithVerify<T>(this IFormatterResolver resolver)
         {
             if (resolver is null)
             {
-                throw new ArgumentNullException(nameof(resolver));
+                ThrowArgumentNullException(nameof(resolver));
             }
 
             IMessagePackFormatter<T> formatter;
@@ -71,16 +77,17 @@ namespace MessagePack
 
         private static readonly MethodInfo GetFormatterRuntimeMethod = typeof(IFormatterResolver).GetRuntimeMethod(nameof(IFormatterResolver.GetFormatter), Type.EmptyTypes);
 
+
         public static object GetFormatterDynamic(this IFormatterResolver resolver, Type type)
         {
             if (resolver is null)
             {
-                throw new ArgumentNullException(nameof(resolver));
+                ThrowArgumentNullException(nameof(resolver));
             }
 
             if (type is null)
             {
-                throw new ArgumentNullException(nameof(type));
+                ThrowArgumentNullException(nameof(type));
             }
 
             if (!FormatterGetters.TryGetValue(type, out var formatterGetter))
