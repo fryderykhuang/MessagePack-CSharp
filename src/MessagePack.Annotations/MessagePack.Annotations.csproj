@@ -10,8 +10,9 @@
     <Description>Attributes and interfaces for .NET types serializable with MessagePack.</Description>
     <PackageTags>MsgPack;MessagePack;Serialization;Formatter;Serializer;Unity;Xamarin</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageId>Flexem.MessagePack.Annotations</PackageId>
-    <PackageVersion>2.0.325</PackageVersion>
+    <PackageId>MessagePack.Annotations</PackageId>
+    <PackageVersion>2.0.3251</PackageVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

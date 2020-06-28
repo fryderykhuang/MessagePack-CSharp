@@ -14,7 +14,7 @@
     <AssemblyName>MessagePack</AssemblyName>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>Flexem.MessagePack</PackageId>
-    <PackageVersion>2.1.115</PackageVersion>
+    <PackageVersion>2.2.4</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,8 +45,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack.Annotations" Version="2.0.323" />
-<!--    <ProjectReference Include="..\MessagePack.Annotations\MessagePack.Annotations.csproj" />-->
+<!--    <PackageReference Include="MessagePack.Annotations" Version="2.0.323" />-->
+    <ProjectReference Include="..\MessagePack.Annotations\MessagePack.Annotations.csproj" />
   </ItemGroup>
 
   <ItemGroup>
