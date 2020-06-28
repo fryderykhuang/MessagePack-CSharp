@@ -18,7 +18,7 @@ namespace MessagePack
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     public class KeyAttribute : Attribute
     {
         public int? IntKey { get; private set; }

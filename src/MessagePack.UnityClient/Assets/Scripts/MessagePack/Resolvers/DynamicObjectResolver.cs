@@ -1825,7 +1825,14 @@ namespace MessagePack.Internal
                         EmittableMember paramMember;
                         if (isIntKey)
                         {
-                            if (intMembers.TryGetValue(ctorParamIndex, out paramMember))
+                            var index = ctorParamIndex;
+                            var keyAttr = item.GetCustomAttribute<KeyAttribute>(true);
+                            if (!(keyAttr is null) && keyAttr.IntKey.HasValue)
+                            {
+                                index = keyAttr.IntKey.Value;
+                            }
+
+                            if (intMembers.TryGetValue(index, out paramMember))
                             {
                                 if ((item.ParameterType == paramMember.Type ||
                                     item.ParameterType.GetTypeInfo().IsAssignableFrom(paramMember.Type))
