@@ -86,7 +86,6 @@ Install-Package MessagePackAnalyzer
 There are also a range of official and third party Extension Packages available (learn more in our [extensions section](#extensions)):
 
 ```ps1
-Install-Package MessagePack.ImmutableCollection
 Install-Package MessagePack.ReactiveProperty
 Install-Package MessagePack.UnityShims
 Install-Package MessagePack.AspNetCoreMvcFormatter
@@ -194,12 +193,12 @@ These types can serialize by default:
 * `ObservableCollection<>`, `ReadOnlyObservableCollection<>`
 * `ISet<>`,
 * `ConcurrentBag<>`, `ConcurrentQueue<>`, `ConcurrentStack<>`, `ConcurrentDictionary<,>`
+* Immutable collections (`ImmutableList<>`, etc)
 * Custom implementations of `ICollection<>` or `IDictionary<,>` with a parameterless constructor
-* Custom implementations of `ICollection` or `IDictionary` with a  parameterless constructor
+* Custom implementations of `IList` or `IDictionary` with a parameterless constructor
 
 You can add support for custom types, and there are some official/third-party extension packages for:
 
-* ImmutableCollections (`ImmutableList<>`, etc)
 * ReactiveProperty
 * for Unity (`Vector3`, `Quaternion`, etc...)
 * F# (Record, FsList, Discriminated Unions, etc...)
@@ -528,12 +527,15 @@ var model = new DynamicModel { Name = "foobar", Items = new[] { 1, 10, 100, 1000
 var blob = MessagePackSerializer.Serialize(model, ContractlessStandardResolver.Options);
 
 // Dynamic ("untyped")
-var dynamicModel = MessagePackSerializer.Deserialize<dynamic>(blob, ContractlessStandardResolver.Instance);
+var dynamicModel = MessagePackSerializer.Deserialize<dynamic>(blob, ContractlessStandardResolver.Options);
 
 // You can access the data using array/dictionary indexers, as shown above
 Console.WriteLine(dynamicModel["Name"]); // foobar
 Console.WriteLine(dynamicModel["Items"][2]); // 100
 ```
+
+Exploring object trees using the dictionary indexer syntax is the fastest option for untyped deserialization, but it is tedious to read and write.
+Where performance is not as important as code readability, consider deserializing with [ExpandoObject](doc/ExpandoObject.md).
 
 ## Object Type Serialization
 
@@ -791,7 +793,7 @@ using (var ms = new MemoryStream())
 using (var ms = new MemoryStream())
 {
     // serialize empty array.
-    ProtoBuf.Serializer.Serialize<Parent>(ms, new Parent { Array = new int[0] });
+    ProtoBuf.Serializer.Serialize<Parent>(ms, new Parent { Array = System.Array.Empty<int>() });
 
     ms.Position = 0;
     var result = ProtoBuf.Serializer.Deserialize<Parent>(ms);
@@ -924,13 +926,10 @@ This is some example benchmark performance data;
 MessagePack for C# has extension points that enable you to provide optimal serialization support for custom types. There are official extension support packages.
 
 ```ps1
-Install-Package MessagePack.ImmutableCollection
 Install-Package MessagePack.ReactiveProperty
 Install-Package MessagePack.UnityShims
 Install-Package MessagePack.AspNetCoreMvcFormatter
 ```
-
-The `MessagePack.ImmutableCollection` package adds support for type of the [System.Collections.Immutable](https://www.nuget.org/packages/System.Collections.Immutable/) library. It adds `ImmutableArray<>`, `ImmutableList<>`, `ImmutableDictionary<,>`, `ImmutableHashSet<>`, `ImmutableSortedDictionary<,>`, `ImmutableSortedSet<>`, `ImmutableQueue<>`, `ImmutableStack<>`, `IImmutableList<>`, `IImmutableDictionary<,>`, `IImmutableQueue<>`, `IImmutableSet<>`, `IImmutableStack<>` serialization support.
 
 The `MessagePack.ReactiveProperty` package adds support for types of the [ReactiveProperty](https://github.com/runceel/ReactiveProperty) library. It adds `ReactiveProperty<>`, `IReactiveProperty<>`, `IReadOnlyReactiveProperty<>`, `ReactiveCollection<>`, `Unit` serialization support. It is useful for save viewmodel state.
 
@@ -942,7 +941,6 @@ After installation, extension packages must be enabled, by creating composite re
 // Set extensions to default resolver.
 var resolver = MessagePack.Resolvers.CompositeResolver.Create(
     // enable extension packages first
-    ImmutableCollectionResolver.Instance,
     ReactivePropertyResolver.Instance,
     MessagePack.Unity.Extension.UnityBlitResolver.Instance,
     MessagePack.Unity.UnityResolver.Instance,
@@ -1043,7 +1041,7 @@ public interface IMessagePackFormatter<T>
 
 Many built-in formatters exists under `MessagePack.Formatters`. Your custom types are usually automatically supported with the built-in type resolvers that generate new `IMessagePackFormatter<T>` types on-the-fly using dynamic code generation. See our [AOT code generation](#aot) support for platforms that do not support this.
 
-However, some types - especially those provided by third party libraries or the runtime itself, cannot be appropriately annotated, and contractless serialization would produce inefficient or even wrong results.
+However, some types - especially those provided by third party libraries or the runtime itself - cannot be appropriately annotated, and contractless serialization would produce inefficient or even wrong results.
 To take more control over the serialization of such custom types, write your own `IMessagePackFormatter<T>` implementation.
 Here is an example of such a custom formatter implementation. Note its use of the primitive API that is described in the next section.
 
@@ -1233,7 +1231,6 @@ Each instance of `MessagePackSerializer` accepts only a single resolver. Most ob
 // Do this once and store it for reuse.
 var resolver = MessagePack.Resolvers.CompositeResolver.Create(
     // resolver custom types first
-    ImmutableCollectionResolver.Instance,
     ReactivePropertyResolver.Instance,
     MessagePack.Unity.Extension.UnityBlitResolver.Instance,
     MessagePack.Unity.UnityResolver.Instance,
