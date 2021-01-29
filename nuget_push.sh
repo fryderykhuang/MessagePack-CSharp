@@ -1,6 +1,7 @@
 #!/bin/bash
 pushd src/MessagePack.Annotations
 dotnet build -c Release || exit 1
+popd
 pushd src/MessagePack
 dotnet build -c Release || exit 1
 popd

@@ -14,7 +14,7 @@
     <AssemblyName>MessagePack</AssemblyName>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>Flexem.MessagePack</PackageId>
-    <PackageVersion>2.2.6</PackageVersion>
+    <PackageVersion>2.2.10</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

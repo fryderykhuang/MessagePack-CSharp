@@ -772,8 +772,8 @@ namespace MessagePack
             {
                 // Fast path: all bytes to decode appear in the same span.
                 // TODO Use option to enable string.Intern
-                string value = string.Intern(StringEncoding.UTF8.GetString(unreadSpan.Slice(0, byteLength)));
-                // string value = StringEncoding.UTF8.GetString(unreadSpan.Slice(0, byteLength));
+                //string value = string.Intern(StringEncoding.UTF8.GetString(unreadSpan.Slice(0, byteLength)));
+                string value = StringEncoding.UTF8.GetString(unreadSpan.Slice(0, byteLength));
                 this.reader.Advance(byteLength);
                 return value;
             }
@@ -1127,8 +1127,8 @@ namespace MessagePack
             }
 
             // TODO Use option to enable string.Intern
-            string value = string.Intern(new string(charArray, 0, initializedChars));
-            //string value = new string(charArray, 0, initializedChars);
+            // string value = string.Intern(new string(charArray, 0, initializedChars));
+            string value = new string(charArray, 0, initializedChars);
             ArrayPool<char>.Shared.Return(charArray);
             return value;
         }

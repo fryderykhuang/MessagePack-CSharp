@@ -1152,7 +1152,6 @@ namespace MessagePack
 
                 var seq = this.writer.SequenceRental.Value.AsReadOnlySequence;
 
-                byte[] ret = null;
                 if (buf.Length >= seq.Length)
                 {
                     seq.CopyTo(buf);
@@ -1162,8 +1161,9 @@ namespace MessagePack
                     buf = seq.ToArray();
                 }
 
+                var ret = seq.Length;
                 this.writer.SequenceRental.Dispose();
-                return seq.Length;
+                return ret;
             }
         }
 
